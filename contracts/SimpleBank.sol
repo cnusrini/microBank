@@ -10,9 +10,9 @@ contract SimpleBank {
     }
 
 
-    /// @enroll() will enroll new customer
-    /// @returns sucessfully enrolled customer's status as bool
-    /// @Emit's appropriate event
+    // enroll will enroll new customer
+    // returns sucessfully enrolled customer's status as bool
+    // Emit's appropriate event
     function enroll() public returns (bool){
 
       enrolled[msg.sender] = true;
