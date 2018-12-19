@@ -3,6 +3,7 @@ contract SimpleBank {
 
     mapping (address => bool) public enrolled;
     mapping (address => uint) private balances;
+    event LogDepositMade(address accountAddress, uint amount);
     address owner;
 
     function SimpleBank() public{
@@ -32,7 +33,8 @@ contract SimpleBank {
       //Using require to verify any potential overflow issues
       require((balances[msg.sender]+ msg.value) >= balances[msg.sender]);
       balances[msg.sender] += msg.value;
-
+      LogDepositMade(msg.sender, msg.value);
+      
       bal = balances[msg.sender];
 
       return bal;

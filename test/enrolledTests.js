@@ -31,12 +31,26 @@ contract('Unit test for isEnrolled?', function(accounts) {
     assert.equal(didOwnerEnrolled, false, 'this customer is not enrolled with this bank');
   });
 
-  it('', async () => {
+  it('tests for deposit made and theri bank balance', async () => {
       if(didCustEnrolled){
         await deployedContract.deposit({from: cust1, value: depositedValue});
         const balance = await deployedContract.balance({from: cust1});
 
         assert.equal(depositedValue.toString(), balance, ' returing correct bank balance ')
+
+        const expectedEvent = {accountAddress: cust1, value: depositedValue};
+        const actualEvent = await deployedContract.LogDepositMade();
+        const log = await new Promise(function(resolve, reject){
+          actualEvent.watch(function(error , log){
+            resolve(log);
+          });
+        });
+
+        const addressFrmActualEvent = log.args.accountAddress;
+        const valueFrmActualEvent = log.args.amount.toString();
+
+        assert.equal(expectedEvent.accountAddress, addressFrmActualEvent, 'address is correct');
+        assert.equal(expectedEvent.depositedValue , valueFrmActualEvent, ' value deposited is correct');
 
       }
       else{
