@@ -3,26 +3,45 @@ var assert = require('assert');
 
 contract('Unit test for isEnrolled?', function(accounts) {
 
+  // owner is one who deployed the contract.
+  // In business terms owner is the owner of the back.
   const owner = accounts[0];
   const cust1 = accounts[1];
-  let deployedContract;
+  const depositedValue = web3.toBigNumber(2);
 
-  beforeEach('ITs deploy SimpleBank smart contract', async () => {
+  let deployedContract;
+  let didCustEnrolled;
+
+  beforeEach('deploy the smart contract', async () => {
     deployedContract = await SimpleBank.deployed();
   });
-
-  it('tests for positive test', async () => {
+  it('tests for positive tests', async () => {
 
     const enrolled = await deployedContract.enroll({from: cust1});
-    const didCustEnrolled = await deployedContract.enrolled(cust1);
+    didCustEnrolled = await deployedContract.enrolled(cust1);
 
     assert.equal(didCustEnrolled, true, "ssss");
 
   });
 
-  it('tests for negative test', async () => {
-    const isOnwerEnrolled = await deployedContract.enrolled(owner);
+  it('tests for negative tests', async () => {
 
-    assert.equal(isOnwerEnrolled, false);
+    const didOwnerEnrolled = await deployedContract.enrolled(owner);
+
+    assert.equal(didOwnerEnrolled, false, 'this customer is not enrolled with this bank');
+  });
+
+  it('', async () => {
+      if(didCustEnrolled){
+        await deployedContract.deposit({from: cust1, value: depositedValue});
+        const balance = await deployedContract.balance({from: cust1});
+
+        assert.equal(depositedValue.toString(), balance, ' returing correct bank balance ')
+
+      }
+      else{
+        console.log('print didCustEnrolled in else' + didCustEnrolled);
+      }
+
   });
 });
