@@ -1,12 +1,12 @@
 pragma solidity ^0.4.18;
-contract SimpleBank {
+contract microBank {
 
     mapping (address => bool) public enrolled;
     mapping (address => uint) private balances;
     event LogDepositMade(address accountAddress, uint amount);
     address owner;
 
-    function SimpleBank() public{
+    function microBank() public{
 
         owner = msg.sender;
     }
@@ -34,7 +34,7 @@ contract SimpleBank {
       require((balances[msg.sender]+ msg.value) >= balances[msg.sender]);
       balances[msg.sender] += msg.value;
       LogDepositMade(msg.sender, msg.value);
-      
+
       bal = balances[msg.sender];
 
       return bal;
@@ -48,6 +48,35 @@ contract SimpleBank {
     function balance() view public returns (uint) {
 
         return balances[msg.sender];
+    }
+
+    // notice Withdraw ether from bank
+    // dev This does not return any excess ether sent to it
+    // param withdrawAmount amount you want to withdraw
+    // return The balance remaining for the user
+    // Emit the appropriate event
+
+    function withdraw(uint withdrawAmount) public payable returns (uint bal) {
+        /* If the sender's balance is at least the amount they want to withdraw,
+           Subtract the amount from the sender's balance, and try to send that amount of ether
+           to the user attempting to withdraw.
+           return the user's balance.*/
+           require(withdrawAmount > 0);
+           require(withdrawAmount < balances[msg.sender]);
+           msg.sender.transfer(withdrawAmount);
+           balances[msg.sender] -= withdrawAmount;
+           bal = balances[msg.sender];
+           return bal;
+    }
+
+    // Fallback function - Called if other functions don't match call or
+    // sent ether without data
+    // Typically, called when invalid data is sent
+    // Added so ether sent to this contract is reverted if the contract fails
+    // otherwise, the sender's money is transferred to contract
+    //7
+    function() public{
+      revert();
     }
 
 
