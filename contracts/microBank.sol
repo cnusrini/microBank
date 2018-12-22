@@ -4,6 +4,8 @@ contract microBank {
     mapping (address => bool) public enrolled;
     mapping (address => uint) private balances;
     event LogDepositMade(address accountAddress, uint amount);
+    //event LogWithdrawlMade(msg.sender accountAddress);
+
     address owner;
 
     function microBank() public{

@@ -1,4 +1,4 @@
-var SimpleBank = artifacts.require("./SimpleBank.sol");
+var SimpleBank = artifacts.require("./microBank.sol");
 var assert = require('assert');
 
 contract('Unit test for isEnrolled?', function(accounts) {
@@ -50,7 +50,7 @@ contract('Unit test for isEnrolled?', function(accounts) {
         const valueFrmActualEvent = log.args.amount.toString();
 
         assert.equal(expectedEvent.accountAddress, addressFrmActualEvent, 'address is correct');
-        assert.equal(expectedEvent.depositedValue , valueFrmActualEvent, ' value deposited is correct');
+        assert.equal(expectedEvent.value , valueFrmActualEvent, ' value deposited is correct');
 
       }
       else{
