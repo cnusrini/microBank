@@ -4,7 +4,7 @@ contract microBank {
     mapping (address => bool) public enrolled;
     mapping (address => uint) private balances;
     event LogDepositMade(address accountAddress, uint amount);
-    //event LogWithdrawlMade(msg.sender accountAddress);
+    event LogWithdrawl(address accountAddress, uint withdrawAmount, uint newBalance);
 
     address owner;
 
@@ -58,17 +58,20 @@ contract microBank {
     // return The balance remaining for the user
     // Emit the appropriate event
 
-    function withdraw(uint withdrawAmount) public payable returns (uint bal) {
+    function withdraw(uint withdrawAmount) public payable returns (uint newBalance) {
         /* If the sender's balance is at least the amount they want to withdraw,
            Subtract the amount from the sender's balance, and try to send that amount of ether
            to the user attempting to withdraw.
            return the user's balance.*/
            require(withdrawAmount > 0);
-           require(withdrawAmount < balances[msg.sender]);
-           msg.sender.transfer(withdrawAmount);
-           balances[msg.sender] -= withdrawAmount;
-           bal = balances[msg.sender];
-           return bal;
+           require(balances[msg.sender] >= withdrawAmount);
+           require(msg.sender.send(withdrawAmount));
+
+           balances[msg.sender] -= withdrawAmount;          
+           newBalance = balances[msg.sender];
+
+           LogWithdrawl(msg.sender, withdrawAmount, newBalance);
+           return newBalance;
     }
 
     // Fallback function - Called if other functions don't match call or

@@ -58,4 +58,15 @@ contract('Unit test for isEnrolled?', function(accounts) {
       }
 
   });
+
+  it('should withdraw correct amount', async () => {
+    const initialAmount = 0;
+
+    await deployedContract.withdraw(depositedValue, {from: cust1});
+    const balance = await deployedContract.balance({from: cust1});
+
+    assert.equal(balance.toString(), initialAmount.toString(), '');
+
+
+  });
 });
