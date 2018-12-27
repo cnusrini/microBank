@@ -67,7 +67,7 @@ contract microBank {
            require(balances[msg.sender] >= withdrawAmount);
            require(msg.sender.send(withdrawAmount));
 
-           balances[msg.sender] -= withdrawAmount;          
+           balances[msg.sender] -= withdrawAmount;
            newBalance = balances[msg.sender];
 
            LogWithdrawl(msg.sender, withdrawAmount, newBalance);
