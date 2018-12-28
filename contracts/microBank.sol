@@ -1,15 +1,17 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.5.0;
+
 contract microBank {
 
     mapping (address => bool) public enrolled;
     mapping (address => uint) private balances;
+    event LogEnrolled(address accountAddress);
     event LogDepositMade(address accountAddress, uint amount);
     event LogWithdrawl(address accountAddress, uint withdrawAmount, uint newBalance);
 
-    address owner;
+    address public owner;
 
-    function microBank() public{
-
+    constructor() public {
+        /* Set the owner to the creator of this contract */
         owner = msg.sender;
     }
 
@@ -35,7 +37,7 @@ contract microBank {
       //Using require to verify any potential overflow issues
       require((balances[msg.sender]+ msg.value) >= balances[msg.sender]);
       balances[msg.sender] += msg.value;
-      LogDepositMade(msg.sender, msg.value);
+      emit LogDepositMade(msg.sender, msg.value);
 
       bal = balances[msg.sender];
 
@@ -70,7 +72,7 @@ contract microBank {
            balances[msg.sender] -= withdrawAmount;
            newBalance = balances[msg.sender];
 
-           LogWithdrawl(msg.sender, withdrawAmount, newBalance);
+           emit LogWithdrawl(msg.sender, withdrawAmount, newBalance);
            return newBalance;
     }
 
@@ -80,7 +82,7 @@ contract microBank {
     // Added so ether sent to this contract is reverted if the contract fails
     // otherwise, the sender's money is transferred to contract
     //7
-    function() public{
+    function() external{
       revert();
     }
 

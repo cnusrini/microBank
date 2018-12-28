@@ -1,72 +1,64 @@
+
 var SimpleBank = artifacts.require("./microBank.sol");
-var assert = require('assert');
 
-contract('Unit test for isEnrolled?', function(accounts) {
+contract('SimpleBank', function(accounts) {
 
-  // owner is one who deployed the contract.
-  // In business terms owner is the owner of the back.
-  const owner = accounts[0];
-  const cust1 = accounts[1];
-  const depositedValue = web3.toBigNumber(2);
+  const owner = accounts[0]
+  const alice = accounts[1];
+  const bob = accounts[2];
+  const deposit = web3.utils.toBN(2);
 
-  let deployedContract;
-  let didCustEnrolled;
+  it("mark addresses as enrolled", async () => {
+    const bank = await SimpleBank.deployed();
 
-  beforeEach('deploy the smart contract', async () => {
-    deployedContract = await SimpleBank.deployed();
-  });
-  it('tests for positive tests', async () => {
+    await bank.enroll({from: alice});
 
-    const enrolled = await deployedContract.enroll({from: cust1});
-    didCustEnrolled = await deployedContract.enrolled(cust1);
+    const aliceEnrolled = await bank.enrolled(alice, {from: alice});
+    assert.equal(aliceEnrolled, true, 'enroll balance is incorrect, check balance method or constructor');
 
-    assert.equal(didCustEnrolled, true, "ssss");
-
+    const ownerEnrolled = await bank.enrolled(owner, {from: owner});
+    assert.equal(ownerEnrolled, false, 'only enrolled users should be marked enrolled');
   });
 
-  it('tests for negative tests', async () => {
+  it("should deposit correct amount", async () => {
+    const bank = await SimpleBank.deployed();
 
-    const didOwnerEnrolled = await deployedContract.enrolled(owner);
+    await bank.enroll({from: alice});
+    await bank.enroll({from: bob});
 
-    assert.equal(didOwnerEnrolled, false, 'this customer is not enrolled with this bank');
+    var result = await bank.deposit({from: alice, value: deposit});
+    const balance = await bank.balance({from: alice});
+
+    assert.equal(deposit.toString(), balance, 'deposit amount incorrect, check deposit method');
+
+    const expectedEventResult = {accountAddress: alice, amount: deposit};
+
+    const logAccountAddress = result.logs[0].args.accountAddress;
+    const logDepositAmount = result.logs[0].args.amount.toNumber();
+
+    assert.equal(expectedEventResult.accountAddress, logAccountAddress, "LogDepositMade event accountAddress property not emitted, check deposit method");
+    assert.equal(expectedEventResult.amount, logDepositAmount, "LogDepositMade event amount property not emitted, check deposit method");
   });
 
-  it('tests for deposit made and theri bank balance', async () => {
-      if(didCustEnrolled){
-        await deployedContract.deposit({from: cust1, value: depositedValue});
-        const balance = await deployedContract.balance({from: cust1});
-
-        assert.equal(depositedValue.toString(), balance, ' returing correct bank balance ')
-
-        const expectedEvent = {accountAddress: cust1, value: depositedValue};
-        const actualEvent = await deployedContract.LogDepositMade();
-        const log = await new Promise(function(resolve, reject){
-          actualEvent.watch(function(error , log){
-            resolve(log);
-          });
-        });
-
-        const addressFrmActualEvent = log.args.accountAddress;
-        const valueFrmActualEvent = log.args.amount.toString();
-
-        assert.equal(expectedEvent.accountAddress, addressFrmActualEvent, 'address is correct');
-        assert.equal(expectedEvent.value , valueFrmActualEvent, ' value deposited is correct');
-
-      }
-      else{
-        console.log('print didCustEnrolled in else' + didCustEnrolled);
-      }
-
-  });
-
-  it('should withdraw correct amount', async () => {
+  it("should withdraw correct amount", async () => {
+    const bank = await SimpleBank.deployed();
     const initialAmount = 0;
 
-    await deployedContract.withdraw(depositedValue, {from: cust1});
-    const balance = await deployedContract.balance({from: cust1});
+	var result = await bank.withdraw(deposit, {from: alice});
+    const balance = await bank.balance({from: alice});
 
-    assert.equal(balance.toString(), initialAmount.toString(), 'Incorrect withdrawAmount');
+    assert.equal(balance.toString(), initialAmount.toString(), 'balance incorrect after withdrawal, check withdraw method');
 
+    const accountAddress = result.logs[0].args.accountAddress;
+    const newBalance = result.logs[0].args.newBalance.toNumber();
+    const withdrawAmount = result.logs[0].args.withdrawAmount.toNumber();
+
+    const expectedEventResult = {accountAddress: alice, newBalance: initialAmount, withdrawAmount: deposit};
+
+
+    assert.equal(expectedEventResult.accountAddress, accountAddress, "LogWithdrawal event accountAddress property not emitted, check deposit method");
+    assert.equal(expectedEventResult.newBalance, newBalance, "LogWithdrawal event newBalance property not emitted, check deposit method");
+    assert.equal(expectedEventResult.withdrawAmount, withdrawAmount, "LogWithdrawal event withdrawalAmount property not emitted, check deposit method");
 
   });
 });
